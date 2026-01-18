@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-saffron: #FF9933;
+    --color-gold: #FFD700;
+    --color-gold-light: #FFF8DC;
+    --color-jain-red: #DC2626;
+    --color-jain-cream: #FFFBF0;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-white text-gray-800 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-2.5 bg-saffron text-white font-medium rounded-lg hover:bg-saffron-dark transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-2.5 bg-white text-saffron border-2 border-saffron font-medium rounded-lg hover:bg-saffron hover:text-white transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-saffron focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .hero-overlay {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+  }
+
+  .glass-search {
+    @apply bg-white/90 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl p-4 md:p-6;
+  }
+}
+
+/* Screenshot Protection & Privacy */
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide content during printing */
+@media print {
+  body {
+    display: none !important;
+  }
+}
