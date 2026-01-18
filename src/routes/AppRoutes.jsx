@@ -22,9 +22,20 @@ const ProtectedRoute = ({ children }) => {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const user = localStorage.getItem('user');
 
-    // Check if user is logged in and has valid user data
     if (!isLoggedIn || !user) {
         return <Navigate to="/login" replace />;
+    }
+
+    return children;
+};
+
+// Public route check (redirects to home if already logged in)
+const PublicRoute = ({ children }) => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const user = localStorage.getItem('user');
+
+    if (isLoggedIn && user) {
+        return <Navigate to="/home" replace />;
     }
 
     return children;
@@ -97,13 +108,41 @@ const AppRoutes = () => {
     return (
         <Router>
             <Routes>
-                {/* Root - redirect to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                {/* Root - redirect based on auth status */}
+                <Route
+                    path="/"
+                    element={
+                        localStorage.getItem('isLoggedIn') ?
+                            <Navigate to="/home" replace /> :
+                            <Navigate to="/login" replace />
+                    }
+                />
 
                 {/* Public Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route
+                    path="/login"
+                    element={
+                        <PublicRoute>
+                            <Login />
+                        </PublicRoute>
+                    }
+                />
+                <Route
+                    path="/register"
+                    element={
+                        <PublicRoute>
+                            <Register />
+                        </PublicRoute>
+                    }
+                />
+                <Route
+                    path="/reset-password"
+                    element={
+                        <PublicRoute>
+                            <ResetPassword />
+                        </PublicRoute>
+                    }
+                />
 
                 {/* Admin Routes (accessible via /admin path on main domain) */}
                 <Route path="/admin" element={<AdminLogin />} />
