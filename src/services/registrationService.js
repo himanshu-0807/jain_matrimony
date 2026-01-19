@@ -51,21 +51,23 @@ const uploadFile = async (file, bucket, folder) => {
  */
 export const submitApplication = async (applicationData) => {
     try {
-        const { email, phone, biodataPdf, photos } = applicationData;
+        const { email, phone, biodataPdf, photos, utrNumber, profileData } = applicationData;
+        let biodataUrl = null;
 
-        console.log('📤 Uploading biodata PDF...');
-        // 1. Upload biodata PDF
-        const { url: biodataUrl, error: biodataError } = await uploadFile(
-            biodataPdf,
-            'biodata-pdfs',
-            email
-        );
+        if (biodataPdf) {
+            console.log('📤 Uploading biodata PDF...');
+            const { url, error: uploadError } = await uploadFile(
+                biodataPdf,
+                'biodata-pdfs',
+                email
+            );
 
-        if (biodataError) {
-            return { success: false, error: `Failed to upload biodata: ${biodataError}` };
+            if (uploadError) {
+                return { success: false, error: `Failed to upload biodata: ${uploadError}` };
+            }
+            biodataUrl = url;
+            console.log('✅ Biodata uploaded:', biodataUrl);
         }
-
-        console.log('✅ Biodata uploaded:', biodataUrl);
         console.log('📤 Uploading photos...');
 
         // 2. Upload all photos
@@ -96,6 +98,8 @@ export const submitApplication = async (applicationData) => {
                     phone,
                     biodata_pdf_url: biodataUrl,
                     photo_urls: photoUrls,
+                    utr_number: utrNumber,
+                    profile_data: profileData,
                     status: 'pending'
                 }
             ])

@@ -67,9 +67,11 @@ const ReviewApplication = () => {
             setApplication(data);
             setEditableEmail(data.email);
             setEditablePhone(data.phone);
-            // Pre-fill contact details
+
+            // Pre-fill profile form with data from application if available
             setProfileData(prev => ({
                 ...prev,
+                ...(data.profile_data || {}),
                 contact_details: {
                     email: data.email,
                     phone: data.phone
