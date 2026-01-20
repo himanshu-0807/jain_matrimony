@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { submitApplication, checkExistingApplication } from '../services/registrationService';
 import TermsModal from '../components/TermsModal';
-import PaymentModal from '../components/PaymentModal';
 import {
     Step1Contact,
     Step2Basic,
@@ -54,7 +53,6 @@ const Register = () => {
 
     const [showSuccess, setShowSuccess] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
@@ -125,12 +123,11 @@ const Register = () => {
 
     const handleConfirmAgreement = () => {
         setShowTermsModal(false);
-        setShowPaymentModal(true);
+        handleFinalSubmit();
     };
 
-    const handleConfirmPayment = async (utrNumber) => {
+    const handleFinalSubmit = async (utrNumber = null) => {
         setLoading(true);
-        setShowPaymentModal(false);
 
         try {
             // Extract profile data from formData
@@ -240,12 +237,6 @@ const Register = () => {
                 isOpen={showTermsModal}
                 onConfirm={handleConfirmAgreement}
                 onCancel={() => setShowTermsModal(false)}
-            />
-            <PaymentModal
-                isOpen={showPaymentModal}
-                onConfirm={handleConfirmPayment}
-                onCancel={() => setShowPaymentModal(false)}
-                loading={loading}
             />
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
