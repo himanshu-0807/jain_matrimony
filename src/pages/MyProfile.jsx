@@ -25,6 +25,7 @@ import {
 import Navbar from '../components/Navbar';
 import { getProfileById } from '../services/profileService';
 import { supabase } from '../lib/supabase';
+import { revokeAccess } from '../services/authService';
 
 const MyProfile = () => {
     const navigate = useNavigate();
@@ -218,6 +219,32 @@ const MyProfile = () => {
             } else {
                 alert('Profile saved successfully!');
                 navigate('/home');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleRevokeAccess = async () => {
+        if (!window.confirm('Are you sure you want to revoke your application? This will permanently delete your profile and account. This action cannot be undone.')) {
+            return;
+        }
+
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!currentUser.id) return;
+
+        setSaving(true);
+        try {
+            const { success, error } = await revokeAccess(currentUser.id);
+
+            if (success) {
+                alert('Your application has been revoked and account deleted.');
+                localStorage.clear();
+                navigate('/login');
+            } else {
+                alert('Failed to revoke application: ' + error);
             }
         } catch (err) {
             alert('Error: ' + err.message);
@@ -726,6 +753,28 @@ const MyProfile = () => {
                         >
                             Cancel
                         </button>
+                    </div>
+
+                    {/* Revoke Access Section */}
+                    <div className="border-t border-red-200 pt-8 mt-12">
+                        <div className="bg-red-50 border border-red-100 rounded-2xl p-6 md:p-8">
+                            <h3 className="text-xl font-bold text-red-800 mb-2 flex items-center gap-2">
+                                <Trash2 className="w-5 h-5" />
+                                Danger Zone
+                            </h3>
+                            <p className="text-red-600 mb-6">
+                                If you wish to withdraw your application and remove all your data from our system, you can revoke your application here.
+                                <br /><strong>Warning: This action is irreversible.</strong>
+                            </p>
+                            <button
+                                type="button"
+                                onClick={handleRevokeAccess}
+                                disabled={saving}
+                                className="px-6 py-3 bg-white border-2 border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm"
+                            >
+                                {saving ? 'Processing...' : '⚠️ Revoke My Application'}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

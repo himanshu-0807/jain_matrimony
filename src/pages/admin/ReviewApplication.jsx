@@ -9,7 +9,6 @@ const ReviewApplication = () => {
     const [application, setApplication] = useState(null);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
-    const [generatedPassword, setGeneratedPassword] = useState('');
     const [showCredentials, setShowCredentials] = useState(false);
     const [credentials, setCredentials] = useState(null);
 
@@ -81,16 +80,12 @@ const ReviewApplication = () => {
         setLoading(false);
     };
 
-    const handleGeneratePassword = () => {
-        const pwd = generatePassword(profileData.full_name);
-        setGeneratedPassword(pwd);
-    };
+    // Password generation removed
+
 
     const handleApprove = async () => {
-        if (!generatedPassword) {
-            alert('Please generate a password first');
-            return;
-        }
+        // No password check needed
+
 
         if (!profileData.full_name || !profileData.gender || !profileData.date_of_birth) {
             alert('Please fill in at least Name, Gender, and Date of Birth');
@@ -116,7 +111,7 @@ const ReviewApplication = () => {
         const { success, credentials: creds, error } = await approveApplication(
             id,
             profileData,
-            generatedPassword,
+            "NO_PASSWORD_REQUIRED", // Password ignored by new auth flow
             modifiedApplication  // Pass modified application
         );
 
@@ -198,39 +193,31 @@ const ReviewApplication = () => {
                     </div>
 
                     <div className="bg-gray-700 rounded-lg p-6 mb-6">
-                        <h3 className="text-xl font-bold text-white mb-4">User Credentials</h3>
+                        <h3 className="text-xl font-bold text-white mb-4">User Approved</h3>
                         <div className="space-y-3">
                             <div>
                                 <p className="text-gray-400 text-sm">Email</p>
                                 <p className="text-white font-mono text-lg">{credentials.email}</p>
                             </div>
-                            <div>
-                                <p className="text-gray-400 text-sm">Phone</p>
-                                <p className="text-white font-mono text-lg">{credentials.phone}</p>
-                            </div>
-                            <div>
-                                <p className="text-gray-400 text-sm">Password</p>
-                                <p className="text-green-400 font-mono text-lg font-bold">{credentials.password}</p>
-                            </div>
+                            {/* Password not shown */}
                         </div>
                     </div>
 
                     <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4 mb-6">
                         <p className="text-yellow-200 text-sm">
-                            ⚠️ <strong>Important:</strong> Copy these credentials and send them to the user via Email or WhatsApp.
-                            This password will not be shown again.
+                            This user can now login with their email address without a password.
                         </p>
                     </div>
 
                     <div className="flex gap-4">
                         <button
                             onClick={() => {
-                                navigator.clipboard.writeText(`Email: ${credentials.email}\nPassword: ${credentials.password}`);
-                                alert('Credentials copied to clipboard!');
+                                navigator.clipboard.writeText(`Email: ${credentials.email}`);
+                                alert('Email copied to clipboard!');
                             }}
                             className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
-                            Copy Credentials
+                            Copy Email
                         </button>
                         <Link
                             to="/admin/applications/pending"
@@ -843,36 +830,11 @@ const ReviewApplication = () => {
                                             Generate Login Credentials
                                         </h4>
                                         <div className="flex gap-4 mb-6">
-                                            <button
-                                                type="button"
-                                                onClick={handleGeneratePassword}
-                                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                            >
-                                                🔑 Generate Password
-                                            </button>
-                                            {generatedPassword && (
-                                                <div className="flex-1 px-4 py-3 bg-green-900/30 border border-green-700 rounded-lg flex items-center justify-between">
-                                                    <span className="text-green-400 font-mono font-bold">{generatedPassword}</span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            navigator.clipboard.writeText(generatedPassword);
-                                                            alert('Password copied!');
-                                                        }}
-                                                        className="text-green-400 hover:text-green-300"
-                                                    >
-                                                        📋 Copy
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
 
-                                        <div className="flex gap-4">
                                             <button
-                                                type="button"
+                                                className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-lg shadow-lg transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
                                                 onClick={handleApprove}
-                                                disabled={processing || !generatedPassword}
-                                                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                                disabled={processing}
                                             >
                                                 {processing ? 'Processing...' : '✅ Approve Application'}
                                             </button>
@@ -890,42 +852,44 @@ const ReviewApplication = () => {
                             </form>
                         </div>
                     </div>
-                </div>
-            </main>
+                </div >
+            </main >
 
             {/* Reject Modal */}
-            {showRejectModal && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center px-4 z-50">
-                    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-red-600">
-                        <h3 className="text-xl font-bold text-white mb-4">Reject Application</h3>
-                        <p className="text-gray-400 mb-4">Please provide a reason for rejection:</p>
-                        <textarea
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
-                            rows="4"
-                            placeholder="Enter rejection reason..."
-                        />
-                        <div className="flex gap-4">
-                            <button
-                                onClick={handleReject}
-                                disabled={processing}
-                                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                            >
-                                {processing ? 'Rejecting...' : 'Confirm Reject'}
-                            </button>
-                            <button
-                                onClick={() => setShowRejectModal(false)}
-                                disabled={processing}
-                                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
+            {
+                showRejectModal && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center px-4 z-50">
+                        <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-red-600">
+                            <h3 className="text-xl font-bold text-white mb-4">Reject Application</h3>
+                            <p className="text-gray-400 mb-4">Please provide a reason for rejection:</p>
+                            <textarea
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+                                rows="4"
+                                placeholder="Enter rejection reason..."
+                            />
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={handleReject}
+                                    disabled={processing}
+                                    className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                    {processing ? 'Rejecting...' : 'Confirm Reject'}
+                                </button>
+                                <button
+                                    onClick={() => setShowRejectModal(false)}
+                                    disabled={processing}
+                                    className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

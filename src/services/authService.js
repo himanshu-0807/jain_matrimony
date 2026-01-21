@@ -51,12 +51,51 @@ export const registerSimple = async (email, password, phone) => {
 };
 
 /**
+ * Revoke user access (Delete Account)
+ * @param {string} userId 
+ * @returns {Promise<{success, error}>}
+ */
+export const revokeAccess = async (userId) => {
+    try {
+        console.log('🚨 Revoking access for user:', userId);
+
+        // 1. Delete from profiles (if not cascaded)
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('user_id', userId);
+
+        if (profileError) {
+            console.error('❌ Error deleting profile:', profileError);
+            // Continue trying to delete user even if profile delete fails (orphan cleanup might handle it)
+        }
+
+        // 2. Delete from users table
+        const { error: userError } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', userId);
+
+        if (userError) {
+            console.error('❌ Error deleting user:', userError);
+            return { success: false, error: userError.message };
+        }
+
+        console.log('✅ Account revoked successfully');
+        return { success: true, error: null };
+    } catch (err) {
+        console.error('❌ Unexpected error revoking access:', err);
+        return { success: false, error: err.message };
+    }
+};
+
+/**
  * Login user (table-based authentication)
  * @param {string} email 
  * @param {string} password 
  * @returns {Promise<{user, session, error}>}
  */
-export const loginSimple = async (email, password) => {
+export const loginSimple = async (email, password = null) => {
     try {
         console.log('🔐 ===== LOGIN DEBUG START =====');
         console.log('📧 Email:', email);
@@ -86,7 +125,7 @@ export const loginSimple = async (email, password) => {
         if (error || !user) {
             console.error('❌ User not found or database error');
             console.error('   Error details:', JSON.stringify(error, null, 2));
-            return { user: null, session: null, error: 'Invalid email or password' };
+            return { user: null, session: null, error: 'Invalid email' };
         }
 
         // Check if user is active
@@ -95,18 +134,30 @@ export const loginSimple = async (email, password) => {
             return { user: null, session: null, error: 'Account is inactive. Please contact admin.' };
         }
 
-        console.log('🔐 Verifying password with bcrypt...');
-        console.log('   Input password:', password);
-        console.log('   Stored hash:', user.password_hash);
+        if (user.role === 'admin') {
+            console.log('👮 Admin login detected, enforcing password check...');
 
-        // Verify password
-        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+            if (!password) {
+                return { user: null, session: null, error: 'Password is required for admin login' };
+            }
 
-        console.log('🔍 Password match result:', passwordMatch);
+            console.log('🔐 Verifying password with bcrypt...');
+            const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
-        if (!passwordMatch) {
-            console.error('❌ Password does not match');
-            return { user: null, session: null, error: 'Invalid email or password' };
+            if (!passwordMatch) {
+                console.error('❌ Password does not match');
+                return { user: null, session: null, error: 'Invalid email or password' };
+            }
+            console.log('✅ Admin password verified');
+        } else {
+            console.log('👤 User login detected, skipping password check...');
+            // For regular users, we still check verification status
+            if (!user.is_verified) {
+                console.error('❌ User is not verified');
+                return { user: null, session: null, error: 'Your account is not approved yet.' };
+            }
+            console.log('✅ User verified (whitelist check passed)');
+            console.log('✅ Login successful (Passwordless Mode)');
         }
 
         console.log('✅ Password verified successfully!');

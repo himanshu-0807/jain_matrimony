@@ -5,8 +5,7 @@ import { login } from '../services/authService';
 const Login = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        email: '',
-        password: ''
+        email: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -17,7 +16,7 @@ const Login = () => {
         setError('');
 
         try {
-            const { user, session, error: loginError } = await login(formData.email, formData.password);
+            const { user, session, error: loginError } = await login(formData.email);
 
             if (loginError) {
                 setError(loginError);
@@ -81,20 +80,7 @@ const Login = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                className="input-field"
-                                placeholder="Enter your password"
-                                required
-                                disabled={loading}
-                            />
-                        </div>
+
 
                         <button
                             type="submit"
@@ -114,12 +100,7 @@ const Login = () => {
                             )}
                         </button>
 
-                        {/* Forgot Password Link */}
-                        <div className="text-center mt-4">
-                            <Link to="/reset-password" className="text-saffron hover:underline text-sm">
-                                Forgot Password?
-                            </Link>
-                        </div>
+
                     </form>
 
                     <div className="mt-6 text-center">
